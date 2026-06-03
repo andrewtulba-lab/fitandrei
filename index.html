@@ -6,988 +6,616 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitAndrei">
 <meta name="theme-color" content="#e8ff47">
-<title>Planul lui Andrei</title>
+<title>FitAndrei</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --border: #2a2a3a;
-    --accent: #e8ff47;
-    --accent2: #ff6b35;
-    --accent3: #47c8ff;
-    --text: #f0f0f0;
-    --text-muted: #888;
-    --green: #4ade80;
-    --red: #f87171;
-    --nav-h: 64px;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
+:root {
+  --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24; --surface3: #222230;
+  --border: #2a2a3a; --accent: #e8ff47; --accent2: #ff6b35; --accent3: #47c8ff;
+  --text: #f0f0f0; --muted: #888; --green: #4ade80; --red: #f87171; --purple: #c084fc;
+  --nav-h: 64px; --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; display:flex; flex-direction:column; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* TOPBAR */
+.topbar { flex-shrink:0; padding:14px 16px 10px; padding-top:calc(14px + env(safe-area-inset-top,0px)); background:rgba(10,10,15,0.97); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.topbar-left h1 { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:2px; color:var(--accent); line-height:1; }
+.topbar-left p { font-size:10px; color:var(--muted); letter-spacing:0.5px; margin-top:1px; }
+.topbar-stats { display:flex; gap:8px; }
+.ts { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:5px 10px; text-align:center; }
+.ts .v { font-family:'JetBrains Mono',monospace; font-size:15px; color:var(--accent); font-weight:600; line-height:1; }
+.ts .l { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; margin-top:1px; }
 
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
+/* SCROLL */
+.scroll-area { flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px); }
+.page { display:none; padding:14px; }
+.page.active { display:block; animation:fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    display: flex;
-    flex-direction: column;
-  }
+/* BOTTOM NAV */
+.bottom-nav { position:fixed; bottom:0; left:0; right:0; height:calc(var(--nav-h) + var(--safe-b)); padding-bottom:var(--safe-b); background:rgba(10,10,15,0.97); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; z-index:100; }
+.nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; position:relative; transition:color 0.15s; }
+.nav-btn::before { content:''; position:absolute; top:0; left:15%; right:15%; height:2px; background:var(--accent); border-radius:0 0 4px 4px; opacity:0; transition:opacity 0.2s; }
+.nav-btn.active { color:var(--accent); }
+.nav-btn.active::before { opacity:1; }
+.nav-icon { font-size:19px; line-height:1; }
+.nav-label { font-size:9px; font-weight:500; letter-spacing:0.3px; }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
+/* CARDS */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; }
+.card-title { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; color:var(--accent); margin-bottom:12px; }
 
-  /* ===== TOP BAR ===== */
-  .topbar {
-    flex-shrink: 0;
-    padding: 16px 20px 12px;
-    padding-top: calc(16px + env(safe-area-inset-top, 0px));
-    background: rgba(10,10,15,0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    position: relative;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+/* INPUTS */
+input, textarea, select {
+  background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+  color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; padding:10px 12px;
+  width:100%; outline:none; transition:border-color 0.15s;
+}
+input:focus, textarea:focus, select:focus { border-color:var(--accent); }
+input[type=number] { -moz-appearance:textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+label { font-size:12px; color:var(--muted); display:block; margin-bottom:5px; font-weight:500; letter-spacing:0.3px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+.form-group { margin-bottom:10px; }
 
-  .topbar-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    line-height: 1;
-  }
+/* BUTTONS */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:11px 18px; border-radius:12px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; border:none; transition:all 0.15s; }
+.btn-accent { background:var(--accent); color:#000; }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+.btn-red { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--red); }
+.btn-green { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); color:var(--green); }
+.btn-sm { padding:7px 14px; font-size:12px; border-radius:9px; }
+.btn-full { width:100%; }
 
-  .topbar-sub {
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
+/* TAGS/BADGES */
+.badge { display:inline-block; padding:3px 10px; border-radius:100px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.badge-a { background:rgba(232,255,71,0.12); color:var(--accent); border:1px solid rgba(232,255,71,0.25); }
+.badge-b { background:rgba(255,107,53,0.12); color:var(--accent2); border:1px solid rgba(255,107,53,0.25); }
+.badge-c { background:rgba(71,200,255,0.12); color:var(--accent3); border:1px solid rgba(71,200,255,0.25); }
+.badge-g { background:rgba(74,222,128,0.12); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+.badge-m { background:rgba(136,136,136,0.1); color:var(--muted); border:1px solid var(--border); }
 
-  .topbar-stats {
-    display: flex;
-    gap: 10px;
-  }
+/* SLABEL */
+.slabel { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:8px; font-weight:600; }
 
-  .topbar-stat {
-    text-align: center;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 6px 12px;
-  }
+/* NOTE BOX */
+.note-box { background:rgba(71,200,255,0.05); border:1px solid rgba(71,200,255,0.15); border-radius:12px; padding:12px 14px; font-size:12px; color:var(--muted); line-height:1.6; }
+.note-box strong { color:var(--accent3); }
 
-  .topbar-stat .v {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
-    color: var(--accent);
-    font-weight: 600;
-    line-height: 1;
-  }
+/* DIVIDER */
+.divider { border:none; border-top:1px solid var(--border); margin:14px 0; }
 
-  .topbar-stat .l {
-    font-size: 9px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
+/* STAT BOXES */
+.stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.stat-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.stat-box { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px 12px; text-align:center; }
+.stat-box .sv { font-family:'Bebas Neue',sans-serif; font-size:30px; line-height:1; }
+.stat-box .sl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:3px; }
+.stat-box.accent .sv { color:var(--accent); }
+.stat-box.orange .sv { color:var(--accent2); }
+.stat-box.blue .sv { color:var(--accent3); }
+.stat-box.green .sv { color:var(--green); }
+.stat-box.purple .sv { color:var(--purple); }
 
-  /* ===== SCROLL AREA ===== */
-  .scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    position: relative;
-    z-index: 1;
-    padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
-  }
+/* PROGRESS BAR */
+.prog-wrap { margin:8px 0; }
+.prog-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-bottom:4px; }
+.prog-track { height:8px; background:var(--surface2); border-radius:100px; overflow:hidden; border:1px solid var(--border); }
+.prog-fill { height:100%; border-radius:100px; transition:width 0.5s ease; }
+.pf-accent { background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+.pf-blue { background:var(--accent3); }
+.pf-green { background:var(--green); }
+.pf-purple { background:var(--purple); }
 
-  .page { display: none; padding: 16px; }
-  .page.active { display: block; animation: fadeIn 0.25s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+/* RING */
+.ring-wrap { position:relative; width:56px; height:56px; flex-shrink:0; }
+.ring-wrap svg { transform:rotate(-90deg); }
+.ring-bg { fill:none; stroke:var(--surface2); stroke-width:5; }
+.ring-fill { fill:none; stroke-width:5; stroke-linecap:round; transition:stroke-dashoffset 0.4s ease; }
+.ring-txt { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:16px; }
 
-  /* ===== BOTTOM NAV ===== */
-  .bottom-nav {
-    flex-shrink: 0;
-    position: fixed;
-    bottom: 0;
-    left: 0; right: 0;
-    height: calc(var(--nav-h) + var(--safe-bottom));
-    padding-bottom: var(--safe-bottom);
-    background: rgba(10,10,15,0.97);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    z-index: 100;
-  }
+/* TRACKER ITEMS */
+.t-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 14px; display:flex; align-items:center; gap:11px; cursor:pointer; transition:all 0.15s; user-select:none; margin-bottom:8px; }
+.t-item.done { border-color:var(--green); background:rgba(74,222,128,0.04); }
+.t-item.auto-done { border-color:var(--accent3); background:rgba(71,200,255,0.04); cursor:default; }
+.t-item .chk { width:22px; height:22px; border:2px solid var(--border); border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; transition:all 0.15s; }
+.t-item.done .chk { background:var(--green); border-color:var(--green); color:#000; }
+.t-item.auto-done .chk { background:var(--accent3); border-color:var(--accent3); color:#000; }
+.t-item .t-text { flex:1; font-size:13px; font-weight:500; }
+.t-item .t-sub { font-size:11px; color:var(--muted); margin-top:1px; }
 
-  .nav-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    cursor: pointer;
-    transition: all 0.15s;
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
-    position: relative;
-  }
+/* LOG ENTRY */
+.log-entry { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:11px 13px; margin-bottom:7px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.log-entry .le-info .le-name { font-size:13px; font-weight:500; }
+.log-entry .le-info .le-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.log-entry .le-nums { text-align:right; flex-shrink:0; }
+.log-entry .le-nums span { display:block; font-family:'JetBrains Mono',monospace; font-size:11px; }
+.log-entry .le-del { color:var(--red); cursor:pointer; font-size:16px; flex-shrink:0; padding:2px; }
 
-  .nav-btn::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 20%; right: 20%;
-    height: 2px;
-    background: var(--accent);
-    border-radius: 0 0 4px 4px;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
+/* WATER LOG */
+.water-btns { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.water-btn { background:rgba(71,200,255,0.1); border:1px solid rgba(71,200,255,0.25); color:var(--accent3); padding:9px 14px; border-radius:10px; cursor:pointer; font-size:13px; font-weight:600; font-family:'DM Sans',sans-serif; transition:all 0.15s; flex:1; min-width:60px; text-align:center; }
+.water-btn:active { transform:scale(0.95); }
 
-  .nav-btn.active { color: var(--accent); }
-  .nav-btn.active::before { opacity: 1; }
+/* EXERCISE CHECK */
+.ex-check { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:11px 13px; display:flex; align-items:center; gap:10px; margin-bottom:7px; cursor:pointer; transition:all 0.15s; user-select:none; }
+.ex-check.done { border-color:var(--accent); background:rgba(232,255,71,0.04); }
+.ex-check .ec-box { width:20px; height:20px; border:2px solid var(--border); border-radius:5px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all 0.15s; }
+.ex-check.done .ec-box { background:var(--accent); border-color:var(--accent); color:#000; }
+.ex-check .ec-name { font-size:13px; font-weight:500; flex:1; }
+.ex-check .ec-type { font-size:10px; color:var(--muted); }
 
-  .nav-icon { font-size: 20px; line-height: 1; }
-  .nav-label { font-size: 10px; font-weight: 500; letter-spacing: 0.3px; }
+/* DATE PICKER / NAVIGATION */
+.date-nav { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.date-nav-btn { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:8px 14px; cursor:pointer; font-size:18px; transition:all 0.15s; color:var(--text); font-family:'DM Sans',sans-serif; }
+.date-nav-btn:hover { border-color:var(--accent); }
+.date-nav-center { flex:1; text-align:center; }
+.date-nav-center .dn-day { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1px; line-height:1; }
+.date-nav-center .dn-date { font-size:11px; color:var(--muted); margin-top:1px; }
+.date-nav-center .dn-today { color:var(--accent); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; }
 
-  /* ===== CARDS ===== */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 12px;
-  }
+/* WEEK CHIPS */
+.week-chips { display:flex; gap:7px; overflow-x:auto; padding-bottom:3px; margin-bottom:14px; scrollbar-width:none; }
+.week-chips::-webkit-scrollbar { display:none; }
+.wchip { flex-shrink:0; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:9px 12px; cursor:pointer; text-align:center; transition:all 0.15s; min-width:58px; }
+.wchip.active { background:var(--surface2); border-color:var(--accent); }
+.wchip .wc-name { font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:1px; }
+.wchip .wc-badge { display:inline-block; margin-top:3px; padding:2px 6px; border-radius:100px; font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; }
 
-  .card-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 1px;
-    margin-bottom: 14px;
-    color: var(--accent);
-  }
+/* MEAL LOG TABLE */
+.meal-item { background:var(--surface2); border:1px solid var(--border); border-radius:11px; padding:11px 13px; margin-bottom:7px; }
+.meal-item-header { display:flex; justify-content:space-between; align-items:flex-start; }
+.meal-item-name { font-size:13px; font-weight:600; }
+.meal-item-time { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent2); }
+.meal-item-desc { font-size:11px; color:var(--muted); margin-top:3px; line-height:1.5; }
+.meal-item-nums { display:flex; gap:10px; margin-top:6px; }
+.meal-item-nums span { font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 8px; border-radius:100px; }
+.mn-kcal { background:rgba(232,255,71,0.1); color:var(--accent); }
+.mn-prot { background:rgba(255,107,53,0.1); color:var(--accent2); }
 
-  /* ===== WEEK SCROLL ===== */
-  .week-scroll {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 16px;
-    scrollbar-width: none;
-  }
-  .week-scroll::-webkit-scrollbar { display: none; }
+/* SETTINGS */
+.settings-section { margin-bottom:16px; }
+.settings-section h3 { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; color:var(--accent); margin-bottom:12px; }
 
-  .day-chip {
-    flex-shrink: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 10px 14px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    min-width: 64px;
-  }
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:20px 20px 0 0; padding:20px 16px; padding-bottom:calc(20px + env(safe-area-inset-bottom,0px)); width:100%; max-width:500px; max-height:85vh; overflow-y:auto; animation:slideUp 0.25s ease; }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal h3 { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; color:var(--accent); margin-bottom:16px; }
+.modal-close { float:right; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:4px 10px; cursor:pointer; color:var(--muted); font-size:14px; font-family:'DM Sans',sans-serif; }
 
-  .day-chip.active {
-    background: var(--surface2);
-    border-color: var(--accent);
-  }
+/* STATS PAGE */
+.stats-week-label { font-size:12px; color:var(--muted); margin-bottom:14px; text-align:center; }
+.avg-bar { margin-bottom:14px; }
+.avg-bar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+.avg-bar-header span:first-child { font-size:13px; font-weight:500; }
+.avg-bar-header span:last-child { font-family:'JetBrains Mono',monospace; font-size:13px; }
 
-  .day-chip .dn {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 1px;
-  }
+/* TIMELINE */
+.timeline { display:flex; flex-direction:column; }
+.tl-item { display:flex; gap:12px; align-items:flex-start; position:relative; }
+.tl-item:not(:last-child)::after { content:''; position:absolute; left:14px; top:30px; bottom:-8px; width:2px; background:var(--border); }
+.tl-dot { width:30px; height:30px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0; position:relative; z-index:1; font-family:'JetBrains Mono',monospace; }
+.tl-dot.s { border-color:var(--accent2); color:var(--accent2); }
+.tl-dot.e { border-color:var(--accent); color:var(--accent); background:rgba(232,255,71,0.08); }
+.tl-content { padding:3px 0 18px; }
+.tl-luna { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+.tl-greu { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1px; line-height:1.1; }
+.tl-bmi { font-size:10px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
 
-  .day-chip .db {
-    display: inline-block;
-    margin-top: 4px;
-    padding: 2px 6px;
-    border-radius: 100px;
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .db-a { background: rgba(232,255,71,0.15); color: var(--accent); }
-  .db-c { background: rgba(71,200,255,0.15); color: var(--accent3); }
-  .db-r { background: rgba(136,136,136,0.1); color: var(--text-muted); }
-  .db-ra { background: rgba(74,222,128,0.1); color: var(--green); }
-
-  /* ===== MEALS ===== */
-  .meal-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 8px;
-    transition: border-color 0.15s;
-  }
-
-  .meal-time {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--accent2);
-    font-weight: 600;
-    min-width: 44px;
-    padding-top: 1px;
-  }
-
-  .meal-info { flex: 1; }
-  .meal-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-  .meal-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
-
-  .meal-kcal {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--accent);
-    font-weight: 600;
-    white-space: nowrap;
-    padding-top: 1px;
-  }
-
-  .total-cal {
-    background: rgba(232,255,71,0.06);
-    border: 1px solid rgba(232,255,71,0.2);
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 4px;
-  }
-
-  .total-cal span:first-child { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; }
-  .total-cal span:last-child { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--accent); font-weight: 600; }
-
-  /* ===== WORKOUT BLOCKS ===== */
-  .block-tag {
-    display: inline-block;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
-    letter-spacing: 1px;
-    padding: 3px 12px;
-    border-radius: 100px;
-    margin-bottom: 10px;
-  }
-  .bt-a { background: rgba(232,255,71,0.1); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
-  .bt-b { background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
-  .bt-c { background: rgba(71,200,255,0.1); color: var(--accent3); border: 1px solid rgba(71,200,255,0.3); }
-
-  .ex-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
-  .ex-table th { text-align: left; padding: 6px 8px; color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); font-weight: 500; }
-  .ex-table td { padding: 9px 8px; border-bottom: 1px solid rgba(42,42,58,0.4); }
-  .ex-table tr:last-child td { border-bottom: none; }
-  .ex-table td:nth-child(2), .ex-table td:nth-child(3) { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); }
-
-  .note-box {
-    background: rgba(71,200,255,0.05);
-    border: 1px solid rgba(71,200,255,0.15);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin-top: 10px;
-  }
-  .note-box strong { color: var(--accent3); }
-
-  /* ===== TRACKER ===== */
-  .tracker-date {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .tracker-date strong { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
-
-  .tracker-grid { display: flex; flex-direction: column; gap: 8px; }
-
-  .tracker-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-    user-select: none;
-  }
-
-  .tracker-item.checked { border-color: var(--green); background: rgba(74,222,128,0.05); }
-
-  .check-box {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--border);
-    border-radius: 7px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    font-size: 14px;
-  }
-
-  .tracker-item.checked .check-box { background: var(--green); border-color: var(--green); color: #000; }
-  .tracker-item span { font-size: 14px; font-weight: 500; }
-
-  .tracker-progress {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .tracker-ring {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
-  }
-
-  .tracker-ring svg { transform: rotate(-90deg); }
-  .ring-bg { fill: none; stroke: var(--surface2); stroke-width: 6; }
-  .ring-fill { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
-
-  .ring-text {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    color: var(--accent);
-  }
-
-  .tracker-prog-info h4 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; }
-  .tracker-prog-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  .reset-btn {
-    width: 100%;
-    margin-top: 14px;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
-  }
-  .reset-btn:hover { border-color: var(--red); color: var(--red); }
-
-  /* ===== PROGRES PAGE ===== */
-  .big-stat {
-    text-align: center;
-    padding: 8px 0 4px;
-  }
-  .big-stat .val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 72px;
-    letter-spacing: 2px;
-    line-height: 1;
-    color: var(--accent);
-  }
-  .big-stat .unit { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
-
-  .weight-btns {
-    display: flex;
-    gap: 10px;
-    margin: 14px 0;
-  }
-
-  .w-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    border: none;
-    transition: all 0.15s;
-    active: scale(0.95);
-  }
-
-  .w-btn-minus { background: rgba(232,255,71,0.1); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
-  .w-btn-plus { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
-
-  .prog-track { height: 10px; background: var(--surface2); border-radius: 100px; overflow: hidden; border: 1px solid var(--border); margin: 6px 0 4px; }
-  .prog-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.6s ease; }
-  .prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
-
-  .timeline { display: flex; flex-direction: column; gap: 0; }
-  .tl-item { display: flex; gap: 14px; align-items: flex-start; position: relative; }
-  .tl-item:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 32px; bottom: -8px; width: 2px; background: var(--border); }
-
-  .tl-dot {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: var(--surface2);
-    border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700;
-    flex-shrink: 0;
-    position: relative; z-index: 1;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .tl-dot.start { border-color: var(--accent2); color: var(--accent2); }
-  .tl-dot.end { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.1); }
-  .tl-dot.current { border-color: var(--accent3); color: var(--accent3); background: rgba(71,200,255,0.1); }
-
-  .tl-content { padding: 4px 0 20px; }
-  .tl-content .luna { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
-  .tl-content .greu { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; line-height: 1.1; }
-  .tl-content .bmi { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
-
-  /* ===== REGULI ===== */
-  .rule-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 10px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    transition: border-color 0.15s;
-  }
-  .rule-icon { font-size: 26px; flex-shrink: 0; }
-  .rule-card h4 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: var(--accent); margin-bottom: 4px; }
-  .rule-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-
-  /* section label */
-  .slabel { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
-
-  /* optional badge */
-  .opt-badge { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid rgba(255,107,53,0.2); margin-bottom: 8px; }
+/* STEPS INPUT */
+.steps-big { text-align:center; margin:10px 0; }
+.steps-big input { text-align:center; font-family:'Bebas Neue',sans-serif; font-size:42px; letter-spacing:2px; color:var(--accent); background:transparent; border:none; border-bottom:2px solid var(--border); border-radius:0; padding:8px 0; width:160px; }
+.steps-big input:focus { border-bottom-color:var(--accent); }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
+<!-- TOPBAR -->
 <div class="topbar">
-  <div>
-    <div class="topbar-title">FITANDREI</div>
-    <div class="topbar-sub">85kg → 70kg · ~5-6 luni</div>
+  <div class="topbar-left">
+    <h1>FITANDREI</h1>
+    <p id="top-sub">Se încarcă...</p>
   </div>
   <div class="topbar-stats">
-    <div class="topbar-stat">
-      <div class="v" id="top-weight">85</div>
-      <div class="l">kg acum</div>
-    </div>
-    <div class="topbar-stat">
-      <div class="v">1700</div>
-      <div class="l">kcal/zi</div>
-    </div>
+    <div class="ts"><div class="v" id="top-weight">—</div><div class="l">kg acum</div></div>
+    <div class="ts"><div class="v" id="top-kcal">—</div><div class="l">kcal/zi</div></div>
   </div>
 </div>
 
 <!-- SCROLL AREA -->
 <div class="scroll-area">
 
-  <!-- PAGE: PROGRAM -->
-  <div id="page-program" class="page active">
-    <div class="week-scroll" id="week-chips"></div>
-    <div id="day-detail-mobile"></div>
+<!-- ========== PAGE: TRACKER ========== -->
+<div id="page-tracker" class="page active">
+  <div class="date-nav">
+    <button class="date-nav-btn" onclick="changeDay(-1)">‹</button>
+    <div class="date-nav-center">
+      <div class="dn-day" id="dn-day">LUNI</div>
+      <div class="dn-date" id="dn-date">1 Ianuarie</div>
+      <div class="dn-today" id="dn-today" style="display:none">● AZI</div>
+    </div>
+    <button class="date-nav-btn" onclick="changeDay(1)">›</button>
   </div>
 
-  <!-- PAGE: ANTRENAMENT -->
-  <div id="page-antrenament" class="page">
-    <div class="card">
-      <div class="block-tag bt-a">Bloc A — 30 min · MEREU</div>
-      <div class="slabel" style="margin-top:8px">Încălzire — 5 min</div>
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Bandă, incline 3-4, viteză normală de mers.</p>
-      <div class="slabel">Circuit principal — 3 runde</div>
-      <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px">Pauză 30 sec între exerciții · 90 sec între runde</p>
-      <table class="ex-table">
-        <thead><tr><th>Exercițiu</th><th>Reps</th><th>Greutate</th></tr></thead>
-        <tbody>
-          <tr><td>Genuflexiuni cu gantere</td><td>12</td><td>7.5kg/mână</td></tr>
-          <tr><td>Flotări</td><td>max</td><td>—</td></tr>
-          <tr><td>Rowing cu gantera</td><td>10/mână</td><td>7.5kg</td></tr>
-          <tr><td>Shoulder press</td><td>10</td><td>5kg/mână</td></tr>
-          <tr><td>Plank</td><td>45 sec</td><td>—</td></tr>
-        </tbody>
-      </table>
-      <div style="margin-top:12px" class="slabel">Cardio final — 5 min</div>
-      <p style="font-size:12px;color:var(--text-muted);line-height:1.5">Bandă, incline maxim, viteză normală.</p>
+  <!-- RING SUMMARY -->
+  <div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
+    <div class="ring-wrap">
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle class="ring-bg" cx="28" cy="28" r="22"/>
+        <circle class="ring-fill" id="ring-fill" cx="28" cy="28" r="22" stroke="var(--accent)" stroke-dasharray="138.2" stroke-dashoffset="138.2"/>
+      </svg>
+      <div class="ring-txt" id="ring-txt" style="color:var(--accent)">0</div>
     </div>
-
-    <div class="card">
-      <div class="opt-badge">Opțional</div>
-      <div class="block-tag bt-b">Bloc B — +40 min</div>
-      <div class="slabel" style="margin-top:8px">Izolație — 3 seturi · pauză 60 sec</div>
-      <table class="ex-table">
-        <thead><tr><th>Exercițiu</th><th>Reps</th><th>Greutate</th></tr></thead>
-        <tbody>
-          <tr><td>Biceps curl</td><td>12</td><td>7.5kg/mână</td></tr>
-          <tr><td>Triceps overhead ext.</td><td>12</td><td>5kg ambele</td></tr>
-          <tr><td>Deadlift românesc</td><td>12</td><td>10kg/mână</td></tr>
-          <tr><td>Lateral raises</td><td>12</td><td>5kg/mână</td></tr>
-        </tbody>
-      </table>
-      <div class="slabel" style="margin-top:12px">Cardio intervale — 20 min</div>
-      <table class="ex-table">
-        <thead><tr><th>Fază</th><th>Durată</th><th>Runde</th></tr></thead>
-        <tbody>
-          <tr><td>Viteză mare</td><td>30 sec</td><td rowspan="2" style="vertical-align:middle">×8</td></tr>
-          <tr><td>Viteză normală</td><td>90 sec</td></tr>
-          <tr><td>Incline maxim final</td><td>5-10 min</td><td>—</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="note-box">
-      <strong>📈 Progresia</strong> — La fiecare 2 săptămâni, dacă ultimele repetări sunt ușoare, adaugi un disc. Dacă nu termini setul cu formă corectă, scazi greutatea.
+    <div style="flex:1">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px" id="ring-title">0 / 0 Obiective</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px" id="ring-sub">Bifează primul obiectiv!</div>
     </div>
   </div>
 
-  <!-- PAGE: TRACKER -->
-  <div id="page-tracker" class="page">
-    <div class="tracker-progress" id="tracker-progress-card">
-      <div class="tracker-ring">
-        <svg width="60" height="60" viewBox="0 0 60 60">
-          <circle class="ring-bg" cx="30" cy="30" r="24"/>
-          <circle class="ring-fill" id="ring-fill" cx="30" cy="30" r="24" stroke-dasharray="150.8" stroke-dashoffset="150.8"/>
-        </svg>
-        <div class="ring-text" id="ring-text">0</div>
-      </div>
-      <div class="tracker-prog-info">
-        <h4 id="tracker-prog-title">0 / 12 Complete</h4>
-        <p id="tracker-prog-sub">Hai, bifează primul obiectiv!</p>
-      </div>
+  <!-- WATER -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="card-title" style="margin-bottom:0">💧 APĂ</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent3)" id="water-display">0 ml</div>
     </div>
-
-    <div class="tracker-date">
-      <span id="tracker-date-label">Azi</span>
-      <strong id="tracker-date-val"></strong>
+    <div class="prog-wrap">
+      <div class="prog-labels"><span>0</span><span id="water-target-label">2500 ml</span></div>
+      <div class="prog-track"><div class="prog-fill pf-blue" id="water-bar" style="width:0%"></div></div>
     </div>
-
-    <div class="tracker-grid" id="tracker-grid"></div>
-    <button class="reset-btn" onclick="resetTracker()">🔄 Resetează ziua</button>
+    <div class="water-btns" style="margin-top:10px">
+      <div class="water-btn" onclick="addWater(150)">+150ml</div>
+      <div class="water-btn" onclick="addWater(250)">+250ml</div>
+      <div class="water-btn" onclick="addWater(500)">+500ml</div>
+      <div class="water-btn" onclick="openWaterCustom()">+Custom</div>
+    </div>
+    <div id="water-entries"></div>
   </div>
 
-  <!-- PAGE: PROGRES -->
-  <div id="page-progres" class="page">
-    <div class="card">
-      <div class="card-title">GREUTATEA MEA</div>
-      <div class="big-stat">
-        <div class="val" id="prog-weight-display">85</div>
-        <div class="unit">kilograme · BMI <span id="prog-bmi">29.4</span></div>
+  <!-- MESE -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="card-title" style="margin-bottom:0">🍽️ MESE</div>
+      <button class="btn btn-accent btn-sm" onclick="openMealModal()">+ Adaugă</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent)" id="day-kcal">0</div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">kcal</div>
       </div>
-      <div class="weight-btns">
-        <button class="w-btn w-btn-minus" onclick="updateWeight(-0.5)">−0.5 kg</button>
-        <button class="w-btn w-btn-minus" onclick="updateWeight(-1)">−1 kg</button>
-        <button class="w-btn w-btn-plus" onclick="updateWeight(1)">+1 kg</button>
-      </div>
-      <div class="prog-labels"><span>85 kg</span><span>Obiectiv: 70 kg</span></div>
-      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-      <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--text-muted)">
-        Mai ai <strong id="prog-remaining" style="color:var(--accent)">15 kg</strong> până la obiectiv
+      <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent2)" id="day-prot">0</div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">proteine g</div>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-title">TIMELINE</div>
-      <div class="timeline" id="timeline"></div>
+    <div class="prog-wrap">
+      <div class="prog-labels"><span>Calorii</span><span id="kcal-target-label">0 / 1700</span></div>
+      <div class="prog-track"><div class="prog-fill pf-accent" id="kcal-bar" style="width:0%"></div></div>
     </div>
+    <div class="prog-wrap">
+      <div class="prog-labels"><span>Proteine</span><span id="prot-target-label">0 / 150g</span></div>
+      <div class="prog-track"><div class="prog-fill pf-purple" id="prot-bar" style="width:0%"></div></div>
+    </div>
+    <div id="meal-entries" style="margin-top:10px"></div>
+  </div>
 
-    <div class="card">
-      <div class="card-title">CALORII & DEFICIT</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 8px;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2)">2499</div>
-          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">TDEE</div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 8px;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent)">1700</div>
-          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">Kcal/zi</div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 8px;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent3)">800</div>
-          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">Deficit</div>
-        </div>
-      </div>
+  <!-- PAȘI -->
+  <div class="card">
+    <div class="card-title">🚶 PAȘI</div>
+    <div class="steps-big">
+      <input type="number" id="steps-input" placeholder="0" min="0" max="99999" onchange="saveSteps()">
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:6px">Introdu numărul de pași de azi</div>
+    <div class="prog-wrap" style="margin-top:10px">
+      <div class="prog-labels"><span>0</span><span>10,000</span></div>
+      <div class="prog-track"><div class="prog-fill pf-green" id="steps-bar" style="width:0%"></div></div>
     </div>
   </div>
 
-  <!-- PAGE: REGULI -->
-  <div id="page-reguli" class="page">
-    <div class="rule-card"><div class="rule-icon">💧</div><div><h4>Hidratare</h4><p>Minim <strong style="color:var(--text)">2.5L apă pe zi</strong>. O sticlă de 500ml golită de 5 ori. Fără excepții.</p></div></div>
-    <div class="rule-card"><div class="rule-icon">🥩</div><div><h4>Proteina — #1</h4><p>Țintești <strong style="color:var(--text)">150g proteină/zi</strong>. Ouă, pui, ton, iaurt grecesc, brânză de vaci. Asta îți salvează mușchii.</p></div></div>
-    <div class="rule-card"><div class="rule-icon">📈</div><div><h4>Progresia</h4><p>La fiecare <strong style="color:var(--text)">2 săptămâni</strong> crești greutatea sau repetările. Corpul se adaptează — trebuie provocat constant.</p></div></div>
-    <div class="rule-card"><div class="rule-icon">😴</div><div><h4>Somnul</h4><p><strong style="color:var(--text)">7-8 ore pe noapte</strong>. Fără somn, cortizolul crește și stochezi mai multă grăsime, mai ales pe burtă.</p></div></div>
-    <div class="rule-card"><div class="rule-icon">🍽️</div><div><h4>Masa de seară</h4><p>Max <strong style="color:var(--text)">120g paste fierte</strong> + carne + salată. Fără pâine sau max o felie. Porția mică e cheia.</p></div></div>
-    <div class="rule-card"><div class="rule-icon">🎯</div><div><h4>Regula 80%</h4><p><strong style="color:var(--text)">80% consistență</strong> pe termen lung bate 100% intensitate timp de 2 săptămâni, oricând.</p></div></div>
-    <div class="rule-card"><div class="rule-icon">⏰</div><div><h4>După antrenament</h4><p>În <strong style="color:var(--text)">30-60 min</strong> după antrenament mănâncă proteină. Ajută recuperarea fără să strici deficitul.</p></div></div>
-    <div class="rule-card"><div class="rule-icon">🚫</div><div><h4>Ce eviți</h4><p>Zahăr, sucuri, pâine albă în exces, fast food, prăjeli. Calorii goale care nu te sațiază și merg direct în grăsime.</p></div></div>
+  <!-- EXERCIȚII -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:0">🏋️ EXERCIȚII</div>
+      <span id="ex-session-badge" class="badge badge-m">0 sesiuni</span>
+    </div>
+    <div id="exercise-list"></div>
   </div>
 
+  <!-- OBIECTIVE MANUALE -->
+  <div class="card">
+    <div class="card-title">✅ OBIECTIVE</div>
+    <div id="manual-objectives"></div>
+  </div>
 </div>
+
+<!-- ========== PAGE: PROGRAM ========== -->
+<div id="page-program" class="page">
+  <div class="week-chips" id="week-chips"></div>
+  <div id="day-program-detail"></div>
+</div>
+
+<!-- ========== PAGE: STATS ========== -->
+<div id="page-stats" class="page">
+  <div class="card">
+    <div class="card-title">📊 ACEASTĂ SĂPTĂMÂNĂ</div>
+    <div class="stats-week-label" id="stats-week-label"></div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>💧 Medie apă/zi</span><span id="avg-water" style="color:var(--accent3)">— ml</span></div>
+      <div class="prog-track"><div class="prog-fill pf-blue" id="avg-water-bar" style="width:0%"></div></div>
+    </div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>🔥 Medie kcal/zi</span><span id="avg-kcal" style="color:var(--accent)">— kcal</span></div>
+      <div class="prog-track"><div class="prog-fill pf-accent" id="avg-kcal-bar" style="width:0%"></div></div>
+    </div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>🥩 Medie proteine/zi</span><span id="avg-prot" style="color:var(--accent2)">— g</span></div>
+      <div class="prog-track"><div class="prog-fill pf-purple" id="avg-prot-bar" style="width:0%"></div></div>
+    </div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>🚶 Medie pași/zi</span><span id="avg-steps" style="color:var(--green)">— pași</span></div>
+      <div class="prog-track"><div class="prog-fill pf-green" id="avg-steps-bar" style="width:0%"></div></div>
+    </div>
+    <hr class="divider">
+    <div class="stat-grid">
+      <div class="stat-box accent"><div class="sv" id="stat-sessions">0</div><div class="sl">Sesiuni antrenament</div></div>
+      <div class="stat-box green"><div class="sv" id="stat-ex-done">0</div><div class="sl">Exerciții bifate</div></div>
+      <div class="stat-box blue"><div class="sv" id="stat-days-logged">0</div><div class="sl">Zile cu log</div></div>
+      <div class="stat-box orange"><div class="sv" id="stat-streak">0</div><div class="sl">Zile consecutive</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 PROGRES GREUTATE</div>
+    <div style="text-align:center;padding:8px 0 4px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:2px;line-height:1;color:var(--accent)" id="prog-w">—</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">kg · BMI <span id="prog-bmi">—</span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin:12px 0">
+      <button class="btn btn-green btn-sm" style="flex:1" onclick="updateWeight(-0.5)">−0.5 kg</button>
+      <button class="btn btn-green btn-sm" style="flex:1" onclick="updateWeight(-1)">−1 kg</button>
+      <button class="btn btn-red btn-sm" style="flex:1" onclick="updateWeight(1)">+1 kg</button>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-labels"><span id="prog-start-lbl">85 kg</span><span>Obiectiv: <span id="prog-goal-lbl">70 kg</span></span></div>
+      <div class="prog-track"><div class="prog-fill pf-accent" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--muted)">
+      Mai ai <strong id="prog-rem" style="color:var(--accent)">— kg</strong> până la obiectiv
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗓️ TIMELINE</div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</div>
+
+<!-- ========== PAGE: ANTRENAMENT ========== -->
+<div id="page-antrenament" class="page">
+  <div class="card">
+    <div class="badge badge-a" style="margin-bottom:10px">Bloc A — 30 min · MEREU</div>
+    <div class="slabel" style="margin-top:8px">Încălzire — 5 min</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Bandă, incline 3-4, viteză normală.</p>
+    <div class="slabel">Circuit — 3 runde · 30s pauză între ex · 90s între runde</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
+      <thead><tr style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.8px"><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">Exercițiu</th><th style="padding:6px 8px;border-bottom:1px solid var(--border)">Reps</th><th style="padding:6px 8px;border-bottom:1px solid var(--border)">Greutate</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4)">Genuflexiuni cu gantere</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">12</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">7.5kg/mână</td></tr>
+        <tr><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4)">Flotări</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">max</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">—</td></tr>
+        <tr><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4)">Rowing cu gantera</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">10/mână</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">7.5kg</td></tr>
+        <tr><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4)">Shoulder press</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">10</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">5kg/mână</td></tr>
+        <tr><td style="padding:9px 8px">Plank</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">45 sec</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">—</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px" class="slabel">Cardio final — 5 min</div>
+    <p style="font-size:12px;color:var(--muted)">Bandă, incline maxim, viteză normală.</p>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;padding:2px 10px;border-radius:100px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,107,53,0.1);color:var(--accent2);border:1px solid rgba(255,107,53,0.2);margin-bottom:8px">Opțional</div>
+    <div class="badge badge-b" style="margin-bottom:10px;display:block">Bloc B — +40 min</div>
+    <div class="slabel">Izolație — 3 seturi · 60s pauză</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
+      <thead><tr style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.8px"><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">Exercițiu</th><th style="padding:6px 8px;border-bottom:1px solid var(--border)">Reps</th><th style="padding:6px 8px;border-bottom:1px solid var(--border)">Greutate</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4)">Biceps curl</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">12</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">7.5kg/mână</td></tr>
+        <tr><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4)">Triceps overhead ext.</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">12</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">5kg ambele</td></tr>
+        <tr><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4)">Deadlift românesc</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">12</td><td style="padding:9px 8px;border-bottom:1px solid rgba(42,42,58,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">10kg/mână</td></tr>
+        <tr><td style="padding:9px 8px">Lateral raises</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">12</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-align:center">5kg/mână</td></tr>
+      </tbody>
+    </table>
+    <div class="slabel" style="margin-top:12px">Cardio intervale — 20 min</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6">30 sec viteză mare → 90 sec normal → ×8 repetări → 5-10 min incline maxim la final.</p>
+  </div>
+  <div class="note-box"><strong>📈 Progresia</strong> — La fiecare 2 săptămâni, dacă ultimele repetări sunt ușoare, adaugi un disc. Dacă nu termini setul cu formă corectă, scazi.</div>
+</div>
+
+<!-- ========== PAGE: SETĂRI ========== -->
+<div id="page-setari" class="page">
+  <div class="card settings-section">
+    <div class="card-title">👤 PROFILUL MEU</div>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label>Greutate curentă (kg)</label>
+        <input type="number" id="set-weight" placeholder="85" min="40" max="200" step="0.1">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Înălțime (cm)</label>
+        <input type="number" id="set-height" placeholder="170" min="140" max="220">
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:10px">
+      <div class="form-group" style="margin-bottom:0">
+        <label>Greutate obiectiv (kg)</label>
+        <input type="number" id="set-goal-weight" placeholder="70" min="40" max="200" step="0.1">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Greutate start (kg)</label>
+        <input type="number" id="set-start-weight" placeholder="85" min="40" max="200" step="0.1">
+      </div>
+    </div>
+  </div>
+
+  <div class="card settings-section">
+    <div class="card-title">🎯 TARGETURI ZILNICE</div>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label>Calorii (kcal)</label>
+        <input type="number" id="set-kcal" placeholder="1700" min="800" max="5000">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Proteine (g)</label>
+        <input type="number" id="set-prot" placeholder="150" min="30" max="400">
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:10px">
+      <div class="form-group" style="margin-bottom:0">
+        <label>Apă (ml)</label>
+        <input type="number" id="set-water" placeholder="2500" min="500" max="6000">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Pași zilnici</label>
+        <input type="number" id="set-steps" placeholder="10000" min="1000" max="50000">
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-accent btn-full" onclick="saveSettings()">💾 Salvează setările</button>
+  <div id="settings-saved" style="text-align:center;color:var(--green);font-size:13px;margin-top:10px;display:none">✓ Salvat cu succes!</div>
+
+  <div class="card settings-section" style="margin-top:12px">
+    <div class="card-title">⚡ REGULI DE BAZĂ</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:20px">💧</span><div><strong style="font-size:13px">Hidratare</strong><p style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5">Minim 2.5L apă pe zi. O sticlă de 500ml golită de 5 ori.</p></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:20px">🥩</span><div><strong style="font-size:13px">Proteina — #1</strong><p style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5">150g/zi. Ouă, pui, ton, iaurt grecesc, brânză de vaci.</p></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:20px">🎯</span><div><strong style="font-size:13px">Regula 80%</strong><p style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5">80% consistență pe termen lung bate 100% intensitate timp de 2 săptămâni.</p></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:20px">😴</span><div><strong style="font-size:13px">Somn</strong><p style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5">7-8 ore pe noapte. Fără somn, cortizolul crește și stochezi mai multă grăsime.</p></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:20px">🚫</span><div><strong style="font-size:13px">Ce eviți</strong><p style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5">Zahăr, sucuri, pâine albă în exces, fast food. Calorii goale care merg direct în grăsime.</p></div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end scroll-area -->
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <button class="nav-btn active" onclick="switchPage('program', this)">
-    <span class="nav-icon">📅</span>
-    <span class="nav-label">Program</span>
-  </button>
-  <button class="nav-btn" onclick="switchPage('antrenament', this)">
-    <span class="nav-icon">🏋️</span>
-    <span class="nav-label">Antrenament</span>
-  </button>
-  <button class="nav-btn" onclick="switchPage('tracker', this)">
-    <span class="nav-icon">✅</span>
-    <span class="nav-label">Tracker</span>
-  </button>
-  <button class="nav-btn" onclick="switchPage('progres', this)">
-    <span class="nav-icon">📈</span>
-    <span class="nav-label">Progres</span>
-  </button>
-  <button class="nav-btn" onclick="switchPage('reguli', this)">
-    <span class="nav-icon">⚡</span>
-    <span class="nav-label">Reguli</span>
-  </button>
+  <button class="nav-btn active" onclick="switchPage('tracker',this)"><span class="nav-icon">✅</span><span class="nav-label">Tracker</span></button>
+  <button class="nav-btn" onclick="switchPage('program',this)"><span class="nav-icon">📅</span><span class="nav-label">Program</span></button>
+  <button class="nav-btn" onclick="switchPage('stats',this)"><span class="nav-icon">📊</span><span class="nav-label">Statistici</span></button>
+  <button class="nav-btn" onclick="switchPage('antrenament',this)"><span class="nav-icon">🏋️</span><span class="nav-label">Antrenament</span></button>
+  <button class="nav-btn" onclick="switchPage('setari',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Setări</span></button>
+</div>
+
+<!-- MODAL: ADD MEAL -->
+<div class="modal-overlay" id="meal-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('meal-modal')">✕ Închide</button>
+    <h3>🍽️ ADAUGĂ MASĂ</h3>
+    <div class="form-group">
+      <label>Ce ai mâncat?</label>
+      <textarea id="meal-name-input" rows="2" placeholder="Ex: Piept de pui cu orez și salată"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label>Calorii (kcal)</label>
+        <input type="number" id="meal-kcal-input" placeholder="0" min="0" max="5000">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Proteine (g)</label>
+        <input type="number" id="meal-prot-input" placeholder="0" min="0" max="500">
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <button class="btn btn-accent btn-full" onclick="saveMeal()">✓ Adaugă masa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CUSTOM WATER -->
+<div class="modal-overlay" id="water-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('water-modal')">✕ Închide</button>
+    <h3>💧 APĂ CUSTOM</h3>
+    <div class="form-group">
+      <label>Cantitate (ml)</label>
+      <input type="number" id="water-custom-input" placeholder="300" min="1" max="2000">
+    </div>
+    <button class="btn btn-accent btn-full" style="margin-top:10px" onclick="saveCustomWater()">✓ Adaugă</button>
+  </div>
 </div>
 
 <script>
-// ==================== DATA ====================
-const days = {
-  luni: {
-    name:'LUNI', emoji:'🏋️', type:'Antrenament', badge:'db-a', badgeText:'Antrenament',
-    meals:[
-      {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
-      {time:'13:00',name:'Prânz',desc:'150-200g piept de pui la grătar + 150g orez/cartofi fierți + salată mare',kcal:650},
-      {time:'17:00',name:'Gustare pre-antrenament',desc:'1 banană + 150g iaurt grecesc',kcal:200},
-      {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste (max 120g fierte) + carne + salată. Max o felie pâine.',kcal:400},
-    ],
-    total:1750, workout:true
-  },
-  marti: {
-    name:'MARȚI', emoji:'🚶', type:'Odihnă activă', badge:'db-ra', badgeText:'Odihnă activă',
-    meals:[
-      {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
-      {time:'13:00',name:'Prânz',desc:'150-200g piept de pui + 100g orez/cartofi fierți + salată',kcal:600},
-      {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste + carne + salată. Fără pâine dacă poți.',kcal:350},
-    ],
-    total:1450, workout:false,
-    note:'Mersul tău normal de 5000-10000 pași. Lasă corpul să se recupereze.'
-  },
-  miercuri: {
-    name:'MIERCURI', emoji:'🏃', type:'Cardio pur', badge:'db-c', badgeText:'Cardio',
-    meals:[
-      {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
-      {time:'13:00',name:'Prânz',desc:'150-200g piept de pui la grătar + 150g orez/cartofi fierți + salată mare',kcal:650},
-      {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste (max 120g) + carne + salată.',kcal:400},
-    ],
-    total:1550, workout:false, cardio:true
-  },
-  joi: {
-    name:'JOI', emoji:'🏋️', type:'Antrenament', badge:'db-a', badgeText:'Antrenament',
-    meals:[
-      {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
-      {time:'13:00',name:'Prânz',desc:'150-200g piept de pui + 150g orez/cartofi fierți + salată mare',kcal:650},
-      {time:'17:00',name:'Gustare pre-antrenament',desc:'1 banană + 150g iaurt grecesc',kcal:200},
-      {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste (max 120g) + carne + salată. Max o felie pâine.',kcal:400},
-    ],
-    total:1750, workout:true
-  },
-  vineri: {
-    name:'VINERI', emoji:'🚶', type:'Odihnă activă', badge:'db-ra', badgeText:'Odihnă activă',
-    meals:[
-      {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
-      {time:'13:00',name:'Prânz',desc:'150-200g piept de pui + 100g orez/cartofi fierți + salată',kcal:600},
-      {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste + carne + salată. Fără pâine dacă poți.',kcal:350},
-    ],
-    total:1450, workout:false,
-    note:'Odihnă activă — lasă mușchii să se refacă înainte de sâmbătă.'
-  },
-  sambata: {
-    name:'SÂMBĂTĂ', emoji:'🏋️', type:'Antrenament', badge:'db-a', badgeText:'Antrenament',
-    meals:[
-      {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
-      {time:'13:00',name:'Prânz',desc:'150-200g piept de pui + 150g orez/cartofi fierți + salată mare',kcal:650},
-      {time:'17:00',name:'Gustare pre-antrenament',desc:'1 banană + 150g iaurt grecesc',kcal:200},
-      {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste (max 120g) + carne + salată.',kcal:400},
-    ],
-    total:1750, workout:true
-  },
-  duminica: {
-    name:'DUMINICĂ', emoji:'😴', type:'Odihnă totală', badge:'db-r', badgeText:'Odihnă',
-    meals:[
-      {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
-      {time:'13:00',name:'Prânz',desc:'150-200g piept de pui + 100g orez/cartofi fierți + salată',kcal:600},
-      {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste + carne + salată. Ziua de relaxare totală.',kcal:350},
-    ],
-    total:1450, workout:false,
-    note:'Odihnă completă. Fără activitate forțată. Mușchii cresc în repaus.'
-  }
+// ==================== CONSTANTS ====================
+const EXERCISES = [
+  {id:'genuflexiuni', name:'Genuflexiuni cu gantere', type:'Bloc A'},
+  {id:'flotari', name:'Flotări', type:'Bloc A'},
+  {id:'rowing', name:'Rowing cu gantera', type:'Bloc A'},
+  {id:'shoulder_press', name:'Shoulder press', type:'Bloc A'},
+  {id:'plank', name:'Plank', type:'Bloc A'},
+  {id:'cardio_banda', name:'Cardio final bandă', type:'Bloc A'},
+  {id:'biceps_curl', name:'Biceps curl', type:'Bloc B'},
+  {id:'triceps_ext', name:'Triceps overhead ext.', type:'Bloc B'},
+  {id:'deadlift', name:'Deadlift românesc', type:'Bloc B'},
+  {id:'lateral_raises', name:'Lateral raises', type:'Bloc B'},
+  {id:'cardio_intervale', name:'Cardio intervale', type:'Bloc B'},
+];
+
+const MANUAL_OBJECTIVES = [
+  {id:'sleep', label:'😴 7-8h somn'},
+  {id:'no_junk', label:'🚫 Fără fast food'},
+  {id:'no_drinks', label:'🚫 Fără sucuri'},
+  {id:'no_bread', label:'🚫 Fără pâine în exces'},
+];
+
+const DAY_NAMES = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
+const DAY_SHORT = ['DUM','LUN','MAR','MIE','JOI','VIN','SÂM'];
+const MONTHS = ['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+
+const PROGRAM_DAYS = {
+  1:{type:'Antrenament',badge:'badge-a',emoji:'🏋️'},
+  2:{type:'Odihnă activă',badge:'badge-g',emoji:'🚶'},
+  3:{type:'Cardio pur',badge:'badge-c',emoji:'🏃'},
+  4:{type:'Antrenament',badge:'badge-a',emoji:'🏋️'},
+  5:{type:'Odihnă activă',badge:'badge-g',emoji:'🚶'},
+  6:{type:'Antrenament',badge:'badge-a',emoji:'🏋️'},
+  0:{type:'Odihnă totală',badge:'badge-m',emoji:'😴'},
 };
 
-const dayKeys = ['luni','marti','miercuri','joi','vineri','sambata','duminica'];
-const dayShort = ['LUN','MAR','MIE','JOI','VIN','SÂM','DUM'];
-
-const timelineData = [
-  {dot:'S', cls:'start', luna:'Start', greu:'85 kg', bmi:'BMI: 29.4 — Supraponderal'},
-  {dot:'L1', cls:'', luna:'Luna 1', greu:'~82 kg', bmi:'BMI: ~28.4'},
-  {dot:'L2', cls:'', luna:'Luna 2', greu:'~80 kg', bmi:'BMI: ~27.7'},
-  {dot:'L3', cls:'', luna:'Luna 3', greu:'~77 kg', bmi:'BMI: ~26.6'},
-  {dot:'L4', cls:'', luna:'Luna 4', greu:'~74 kg', bmi:'BMI: ~25.6'},
-  {dot:'L5', cls:'', luna:'Luna 5', greu:'~72 kg', bmi:'BMI: ~24.9'},
-  {dot:'🎯', cls:'end', luna:'Luna 5-6', greu:'70 kg ✓', bmi:'BMI: 24.2 — Greutate normală'},
-];
-
-const trackerItems = [
-  '💧 2.5L apă băută',
-  '🥩 150g proteină atinsă',
-  '🍳 Mic dejun mâncat',
-  '🍗 Prânz mâncat',
-  '🌙 Cina controlată',
-  '🏋️ Antrenament / Cardio',
-  '🚶 Pași zilnici atinși',
-  '😴 7-8h somn',
-  '🚫 Fără fast food',
-  '🚫 Fără sucuri',
-  '🚫 Fără pâine în exces',
-  '📊 Calorii respectate',
-];
-
-// ==================== STATE (localStorage) ====================
+// ==================== STATE ====================
 function loadState() {
-  try {
-    return JSON.parse(localStorage.getItem('fitandrei_state') || '{}');
-  } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem('fitandrei_v2') || '{}'); } catch { return {}; }
 }
-
-function saveState(state) {
-  try { localStorage.setItem('fitandrei_state', JSON.stringify(state)); } catch {}
+function saveState() {
+  try { localStorage.setItem('fitandrei_v2', JSON.stringify(state)); } catch {}
 }
 
 let state = loadState();
-if (!state.weight) state.weight = 85;
-if (!state.tracker) state.tracker = {};
-if (!state.trackerDate) state.trackerDate = '';
 
-// Reset tracker if new day
-const todayStr = new Date().toDateString();
-if (state.trackerDate !== todayStr) {
-  state.tracker = {};
-  state.trackerDate = todayStr;
-  saveState(state);
+// Defaults
+if (!state.settings) state.settings = { weight:85, height:170, goalWeight:70, startWeight:85, kcal:1700, prot:150, water:2500, steps:10000 };
+if (!state.days) state.days = {};
+
+// Current viewing date
+let viewDate = new Date();
+// If it's between midnight and 4am, default to yesterday for tracker
+if (viewDate.getHours() < 4) {
+  viewDate.setDate(viewDate.getDate() - 1);
 }
 
-// ==================== WEEK / DAY ====================
-function renderWeekChips() {
-  const today = new Date().getDay(); // 0=Sun
-  const todayKey = ['duminica','luni','marti','miercuri','joi','vineri','sambata'][today];
-  const container = document.getElementById('week-chips');
-  container.innerHTML = dayKeys.map((k, i) => `
-    <div class="day-chip ${k === todayKey ? 'active' : ''}" id="chip-${k}" onclick="selectDay('${k}')">
-      <div class="dn">${dayShort[i]}</div>
-      <div class="db ${days[k].badge}">${days[k].badgeText}</div>
-    </div>
-  `).join('');
-  selectDay(todayKey);
+function dateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function selectDay(key) {
-  document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('active'));
-  const chip = document.getElementById('chip-' + key);
-  if (chip) { chip.classList.add('active'); chip.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
-  renderDayDetail(key);
-}
-
-function renderDayDetail(key) {
-  const d = days[key];
-  const meals = d.meals.map(m => `
-    <div class="meal-item">
-      <div class="meal-time">${m.time}</div>
-      <div class="meal-info">
-        <div class="meal-name">${m.name}</div>
-        <div class="meal-desc">${m.desc}</div>
-      </div>
-      <div class="meal-kcal">${m.kcal}</div>
-    </div>
-  `).join('');
-
-  let workoutHTML = '';
-  if (d.workout) {
-    workoutHTML = `
-      <div class="card" style="margin-top:12px">
-        <div class="slabel">Antrenament — 19:30</div>
-        <div class="block-tag bt-a" style="margin-bottom:10px">Bloc A — mereu</div>
-        <table class="ex-table">
-          <thead><tr><th>Exercițiu</th><th>Reps</th><th>Greutate</th></tr></thead>
-          <tbody>
-            <tr><td>Genuflexiuni cu gantere</td><td>12</td><td>7.5kg/mână</td></tr>
-            <tr><td>Flotări</td><td>max</td><td>—</td></tr>
-            <tr><td>Rowing cu gantera</td><td>10/mână</td><td>7.5kg</td></tr>
-            <tr><td>Shoulder press</td><td>10</td><td>5kg/mână</td></tr>
-            <tr><td>Plank</td><td>45 sec</td><td>—</td></tr>
-          </tbody>
-        </table>
-        <div class="opt-badge" style="margin-top:12px">Opțional</div>
-        <div class="block-tag bt-b">Bloc B — +40 min</div>
-        <table class="ex-table" style="margin-top:6px">
-          <thead><tr><th>Exercițiu</th><th>Reps</th><th>Greutate</th></tr></thead>
-          <tbody>
-            <tr><td>Biceps curl</td><td>12</td><td>7.5kg/mână</td></tr>
-            <tr><td>Triceps overhead ext.</td><td>12</td><td>5kg</td></tr>
-            <tr><td>Deadlift românesc</td><td>12</td><td>10kg/mână</td></tr>
-            <tr><td>Lateral raises</td><td>12</td><td>5kg/mână</td></tr>
-          </tbody>
-        </table>
-      </div>
-    `;
-  } else if (d.cardio) {
-    workoutHTML = `
-      <div class="card" style="margin-top:12px">
-        <div class="slabel">Cardio — 19:30</div>
-        <div class="block-tag bt-c">Cardio pur — ~40 min</div>
-        <table class="ex-table" style="margin-top:8px">
-          <thead><tr><th>Fază</th><th>Durată</th><th>Runde</th></tr></thead>
-          <tbody>
-            <tr><td>Viteză mare</td><td>30 sec</td><td rowspan="2" style="vertical-align:middle">×8</td></tr>
-            <tr><td>Viteză normală</td><td>90 sec</td></tr>
-            <tr><td>Incline maxim final</td><td>10 min</td><td>—</td></tr>
-          </tbody>
-        </table>
-      </div>
-    `;
-  } else if (d.note) {
-    workoutHTML = `<div class="note-box" style="margin-top:12px"><strong>${d.emoji} ${d.type}</strong><br>${d.note}</div>`;
-  }
-
-  document.getElementById('day-detail-mobile').innerHTML = `
-    <div class="card">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:14px">
-        ${d.emoji} ${d.name} <span style="font-size:14px;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-weight:400">— ${d.type}</span>
-      </div>
-      <div class="slabel">Mâncare</div>
-      ${meals}
-      <div class="total-cal"><span>Total calorii</span><span>${d.total} kcal</span></div>
-    </div>
-    ${workoutHTML}
-  `;
-}
-
-// ==================== TRACKER ====================
-function renderTracker() {
-  const checked = Object.values(state.tracker).filter(Boolean).length;
-  const total = trackerItems.length;
-  const pct = checked / total;
-  const circumference = 150.8;
-  const offset = circumference - (pct * circumference);
-
-  document.getElementById('ring-fill').style.strokeDashoffset = offset;
-  document.getElementById('ring-text').textContent = checked;
-  document.getElementById('tracker-prog-title').textContent = `${checked} / ${total} Complete`;
-
-  const subs = ['Hai, bifează primul obiectiv!','Bun început!','Continui bine!','La jumătate!','Aproape!','Excelent!','Perfect! Zi completă! 🎉'];
-  document.getElementById('tracker-prog-sub').textContent = subs[Math.min(Math.floor(pct * 6), 6)];
-
-  const now = new Date();
-  document.getElementById('tracker-date-val').textContent = now.toLocaleDateString('ro-RO', {weekday:'long',day:'numeric',month:'long'});
-
-  const grid = document.getElementById('tracker-grid');
-  grid.innerHTML = trackerItems.map((item, i) => {
-    const done = !!state.tracker[i];
-    return `
-      <div class="tracker-item ${done ? 'checked' : ''}" onclick="toggleTracker(${i})">
-        <div class="check-box">${done ? '✓' : ''}</div>
-        <span>${item}</span>
-      </div>
-    `;
-  }).join('');
-}
-
-function toggleTracker(i) {
-  state.tracker[i] = !state.tracker[i];
-  saveState(state);
-  renderTracker();
-}
-
-function resetTracker() {
-  state.tracker = {};
-  saveState(state);
-  renderTracker();
-}
-
-// ==================== PROGRESS ====================
-function renderProgress() {
-  const w = state.weight;
-  const bmi = (w / 2.89).toFixed(1);
-  const pct = Math.max(0, Math.min(100, ((85 - w) / 15) * 100));
-  const remaining = Math.max(0, (w - 70).toFixed(1));
-
-  document.getElementById('prog-weight-display').textContent = w;
-  document.getElementById('prog-bmi').textContent = bmi;
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-remaining').textContent = remaining + ' kg';
-  document.getElementById('top-weight').textContent = w;
-}
-
-function updateWeight(delta) {
-  state.weight = Math.max(60, Math.min(85, Math.round((state.weight + delta) * 10) / 10));
-  saveState(state);
-  renderProgress();
-}
-
-function renderTimeline() {
-  document.getElementById('timeline').innerHTML = timelineData.map(t => `
-    <div class="tl-item">
-      <div class="tl-dot ${t.cls}">${t.dot}</div>
-      <div class="tl-content">
-        <div class="luna">${t.luna}</div>
-        <div class="greu" style="${t.cls==='end'?'color:var(--accent)':''}">${t.greu}</div>
-        <div class="bmi" style="${t.cls==='end'?'color:var(--accent)':''}">${t.bmi}</div>
-      </div>
-    </div>
-  `).join('');
+function getDay(d) {
+  const k = dateKey(d);
+  if (!state.days[k]) state.days[k] = { water:[], meals:[], steps:0, exercises:{}, objectives:{} };
+  return state.days[k];
 }
 
 // ==================== NAVIGATION ====================
@@ -997,7 +625,483 @@ function switchPage(page, btn) {
   document.getElementById('page-' + page).classList.add('active');
   btn.classList.add('active');
   document.querySelector('.scroll-area').scrollTop = 0;
-  if (page === 'progres') setTimeout(renderProgress, 50);
+  if (page === 'stats') renderStats();
+  if (page === 'program') renderProgramPage();
+  if (page === 'setari') loadSettingsForm();
+}
+
+// ==================== DATE NAV ====================
+function changeDay(delta) {
+  viewDate = new Date(viewDate);
+  viewDate.setDate(viewDate.getDate() + delta);
+  renderTrackerPage();
+}
+
+function renderDateNav() {
+  const today = new Date();
+  const isToday = dateKey(viewDate) === dateKey(today);
+  document.getElementById('dn-day').textContent = DAY_NAMES[viewDate.getDay()].toUpperCase();
+  document.getElementById('dn-date').textContent = `${viewDate.getDate()} ${MONTHS[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+  document.getElementById('dn-today').style.display = isToday ? 'block' : 'none';
+}
+
+// ==================== TRACKER PAGE ====================
+function renderTrackerPage() {
+  renderDateNav();
+  const day = getDay(viewDate);
+  const s = state.settings;
+
+  // Water
+  const totalWater = day.water.reduce((a,b) => a + b.ml, 0);
+  document.getElementById('water-display').textContent = totalWater + ' ml';
+  document.getElementById('water-target-label').textContent = s.water + ' ml';
+  const wpct = Math.min(100, (totalWater / s.water) * 100);
+  document.getElementById('water-bar').style.width = wpct + '%';
+
+  // Water entries
+  document.getElementById('water-entries').innerHTML = day.water.length ? day.water.map((w,i) => `
+    <div class="log-entry" style="margin-top:0">
+      <div class="le-info"><div class="le-name">💧 ${w.ml} ml</div><div class="le-sub">${w.time}</div></div>
+      <span class="le-del" onclick="deleteWater(${i})">✕</span>
+    </div>
+  `).join('') : '';
+
+  // Meals
+  const totalKcal = day.meals.reduce((a,b) => a + (b.kcal||0), 0);
+  const totalProt = day.meals.reduce((a,b) => a + (b.prot||0), 0);
+  document.getElementById('day-kcal').textContent = totalKcal;
+  document.getElementById('day-prot').textContent = totalProt;
+  document.getElementById('kcal-target-label').textContent = `${totalKcal} / ${s.kcal}`;
+  document.getElementById('prot-target-label').textContent = `${totalProt} / ${s.prot}g`;
+  document.getElementById('kcal-bar').style.width = Math.min(100,(totalKcal/s.kcal)*100) + '%';
+  document.getElementById('prot-bar').style.width = Math.min(100,(totalProt/s.prot)*100) + '%';
+  document.getElementById('meal-entries').innerHTML = day.meals.map((m,i) => `
+    <div class="meal-item">
+      <div class="meal-item-header">
+        <div class="meal-item-name">${m.name || 'Masă'}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="meal-item-time">${m.time}</div>
+          <span class="le-del" onclick="deleteMeal(${i})">✕</span>
+        </div>
+      </div>
+      <div class="meal-item-nums">
+        ${m.kcal ? `<span class="mn-kcal">${m.kcal} kcal</span>` : ''}
+        ${m.prot ? `<span class="mn-prot">${m.prot}g prot</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  // Steps
+  const stepsInput = document.getElementById('steps-input');
+  stepsInput.value = day.steps || '';
+  const stepsPct = Math.min(100, ((day.steps||0) / s.steps) * 100);
+  document.getElementById('steps-bar').style.width = stepsPct + '%';
+
+  // Exercises
+  const exList = document.getElementById('exercise-list');
+  exList.innerHTML = EXERCISES.map(ex => {
+    const done = !!(day.exercises && day.exercises[ex.id]);
+    return `
+      <div class="ex-check ${done ? 'done' : ''}" onclick="toggleExercise('${ex.id}')">
+        <div class="ec-box">${done ? '✓' : ''}</div>
+        <div style="flex:1"><div class="ec-name">${ex.name}</div></div>
+        <div class="ec-type"><span class="badge ${ex.type==='Bloc A'?'badge-a':'badge-b'}">${ex.type}</span></div>
+      </div>
+    `;
+  }).join('');
+
+  // Session count
+  const exDone = Object.values(day.exercises||{}).filter(Boolean).length;
+  const blocADone = EXERCISES.filter(e => e.type==='Bloc A' && day.exercises && day.exercises[e.id]).length;
+  const blocBDone = EXERCISES.filter(e => e.type==='Bloc B' && day.exercises && day.exercises[e.id]).length;
+  const sessions = (blocADone >= 3 ? 1 : 0) + (blocBDone >= 3 ? 1 : 0);
+  document.getElementById('ex-session-badge').textContent = sessions > 0 ? `${sessions} sesiune${sessions>1?'':''}` : '0 sesiuni';
+  document.getElementById('ex-session-badge').className = `badge ${sessions > 0 ? 'badge-a' : 'badge-m'}`;
+
+  // Manual objectives
+  const autoWater = totalWater >= s.water;
+  const autoKcal = totalKcal >= s.kcal * 0.85 && totalKcal <= s.kcal * 1.1;
+  const autoProt = totalProt >= s.prot;
+  const autoSteps = (day.steps||0) >= s.steps;
+
+  const autoItems = [
+    {id:'auto_water', label:'💧 Apă atinsă', done: autoWater, auto:true},
+    {id:'auto_kcal', label:'🔥 Calorii în target', done: autoKcal, auto:true},
+    {id:'auto_prot', label:'🥩 Proteine atinse', done: autoProt, auto:true},
+    {id:'auto_steps', label:'🚶 Pași atinși', done: autoSteps, auto:true},
+  ];
+
+  const manualHTML = MANUAL_OBJECTIVES.map(obj => {
+    const done = !!(day.objectives && day.objectives[obj.id]);
+    return `
+      <div class="t-item ${done?'done':''}" onclick="toggleObjective('${obj.id}')">
+        <div class="chk">${done?'✓':''}</div>
+        <div class="t-text">${obj.label}</div>
+      </div>
+    `;
+  }).join('');
+
+  const autoHTML = autoItems.map(obj => `
+    <div class="t-item ${obj.done ? 'auto-done' : ''}">
+      <div class="chk">${obj.done ? '✓' : ''}</div>
+      <div>
+        <div class="t-text">${obj.label}</div>
+        <div class="t-sub">${obj.done ? 'Auto-bifat ✓' : 'Se bifează automat când atingi targetul'}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('manual-objectives').innerHTML = `
+    <div class="slabel">Auto-bifate</div>
+    ${autoHTML}
+    <div class="slabel" style="margin-top:12px">Manuale</div>
+    ${manualHTML}
+  `;
+
+  // Ring
+  const allDone = [autoWater, autoKcal, autoProt, autoSteps,
+    ...MANUAL_OBJECTIVES.map(o => !!(day.objectives && day.objectives[o.id]))
+  ];
+  const doneCount = allDone.filter(Boolean).length;
+  const total = allDone.length;
+  const pct = doneCount / total;
+  const circ = 138.2;
+  document.getElementById('ring-fill').style.strokeDashoffset = circ - (pct * circ);
+  document.getElementById('ring-txt').textContent = doneCount;
+  document.getElementById('ring-title').textContent = `${doneCount} / ${total} Obiective`;
+  const subs = ['Hai, bifează primul!','Bun început!','Continui bine!','La jumătate!','Aproape!','Excelent!','Zi perfectă! 🎉','Zi perfectă! 🎉','Zi perfectă! 🎉'];
+  document.getElementById('ring-sub').textContent = subs[Math.min(doneCount, subs.length-1)];
+
+  // Update topbar
+  document.getElementById('top-weight').textContent = state.settings.weight;
+  document.getElementById('top-kcal').textContent = totalKcal;
+  document.getElementById('top-sub').textContent = `${state.settings.weight}kg → ${state.settings.goalWeight}kg`;
+}
+
+// ==================== WATER ====================
+function addWater(ml) {
+  const day = getDay(viewDate);
+  const now = new Date();
+  day.water.push({ ml, time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}` });
+  saveState();
+  renderTrackerPage();
+}
+
+function deleteWater(i) {
+  const day = getDay(viewDate);
+  day.water.splice(i, 1);
+  saveState();
+  renderTrackerPage();
+}
+
+function openWaterCustom() {
+  document.getElementById('water-custom-input').value = '';
+  openModal('water-modal');
+}
+
+function saveCustomWater() {
+  const ml = parseInt(document.getElementById('water-custom-input').value);
+  if (ml > 0) { addWater(ml); closeModal('water-modal'); }
+}
+
+// ==================== MEALS ====================
+function openMealModal() {
+  document.getElementById('meal-name-input').value = '';
+  document.getElementById('meal-kcal-input').value = '';
+  document.getElementById('meal-prot-input').value = '';
+  openModal('meal-modal');
+}
+
+function saveMeal() {
+  const name = document.getElementById('meal-name-input').value.trim();
+  const kcal = parseInt(document.getElementById('meal-kcal-input').value) || 0;
+  const prot = parseInt(document.getElementById('meal-prot-input').value) || 0;
+  if (!name && !kcal) return;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  getDay(viewDate).meals.push({ name: name || 'Masă', kcal, prot, time });
+  saveState();
+  closeModal('meal-modal');
+  renderTrackerPage();
+}
+
+function deleteMeal(i) {
+  getDay(viewDate).meals.splice(i, 1);
+  saveState();
+  renderTrackerPage();
+}
+
+// ==================== STEPS ====================
+function saveSteps() {
+  const val = parseInt(document.getElementById('steps-input').value) || 0;
+  getDay(viewDate).steps = val;
+  saveState();
+  renderTrackerPage();
+}
+
+// ==================== EXERCISES ====================
+function toggleExercise(id) {
+  const day = getDay(viewDate);
+  if (!day.exercises) day.exercises = {};
+  day.exercises[id] = !day.exercises[id];
+  saveState();
+  renderTrackerPage();
+}
+
+// ==================== OBJECTIVES ====================
+function toggleObjective(id) {
+  const day = getDay(viewDate);
+  if (!day.objectives) day.objectives = {};
+  day.objectives[id] = !day.objectives[id];
+  saveState();
+  renderTrackerPage();
+}
+
+// ==================== MODALS ====================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ==================== PROGRAM PAGE ====================
+const dayKeys = ['luni','marti','miercuri','joi','vineri','sambata','duminica'];
+const dayShortMap = ['LUN','MAR','MIE','JOI','VIN','SÂM','DUM'];
+const dayDOW = [1,2,3,4,5,6,0];
+
+const programMeals = {
+  antrenament: [
+    {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
+    {time:'13:00',name:'Prânz',desc:'150-200g piept de pui + 150g orez/cartofi fierți + salată mare',kcal:650},
+    {time:'17:00',name:'Gustare pre-antrenament',desc:'1 banană + 150g iaurt grecesc',kcal:200},
+    {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste (max 120g) + carne + salată. Max o felie pâine.',kcal:400},
+  ],
+  odihna: [
+    {time:'06:30',name:'Mic dejun',desc:'3 ouă omletă/fierte + 100g fulgi de ovăz + 1 fruct',kcal:500},
+    {time:'13:00',name:'Prânz',desc:'150-200g piept de pui + 100g orez/cartofi fierți + salată',kcal:600},
+    {time:'21:00',name:'Masa cu familia',desc:'Porție mică paste + carne + salată. Fără pâine dacă poți.',kcal:350},
+  ]
+};
+
+let selectedProgramDay = new Date().getDay();
+
+function renderProgramPage() {
+  const chips = document.getElementById('week-chips');
+  chips.innerHTML = dayDOW.map((dow, i) => {
+    const prog = PROGRAM_DAYS[dow];
+    return `<div class="wchip ${dow === selectedProgramDay ? 'active' : ''}" id="wchip-${dow}" onclick="selectProgramDay(${dow})">
+      <div class="wc-name">${dayShortMap[i]}</div>
+      <div class="wc-badge ${prog.badge}">${prog.emoji}</div>
+    </div>`;
+  }).join('');
+  renderProgramDay(selectedProgramDay);
+}
+
+function selectProgramDay(dow) {
+  selectedProgramDay = dow;
+  document.querySelectorAll('.wchip').forEach(c => c.classList.remove('active'));
+  const chip = document.getElementById('wchip-' + dow);
+  if (chip) { chip.classList.add('active'); chip.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
+  renderProgramDay(dow);
+}
+
+function renderProgramDay(dow) {
+  const prog = PROGRAM_DAYS[dow];
+  const isWork = dow === 1 || dow === 4 || dow === 6;
+  const isCardio = dow === 3;
+  const meals = isWork ? programMeals.antrenament : programMeals.odihna;
+  const total = meals.reduce((a,b) => a+b.kcal, 0);
+
+  const mealHTML = meals.map(m => `
+    <div class="meal-item">
+      <div class="meal-item-header">
+        <div class="meal-item-name">${m.name}</div>
+        <div class="meal-item-time">${m.time}</div>
+      </div>
+      <div class="meal-item-nums"><span class="mn-kcal">${m.kcal} kcal</span></div>
+    </div>
+  `).join('');
+
+  let actHTML = '';
+  if (isWork) {
+    actHTML = `<div class="card" style="margin-top:10px">
+      <div class="slabel">Antrenament — 19:30</div>
+      <span class="badge badge-a" style="margin-bottom:8px;display:inline-block">Bloc A mereu</span>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6">Genuflexiuni · Flotări · Rowing · Shoulder press · Plank · Cardio 5 min</p>
+      <div style="margin-top:10px"><span class="badge badge-b" style="display:inline-block;margin-bottom:6px">Bloc B opțional</span>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6">Biceps curl · Triceps ext · Deadlift românesc · Lateral raises · Cardio intervale 20 min</p></div>
+    </div>`;
+  } else if (isCardio) {
+    actHTML = `<div class="card" style="margin-top:10px">
+      <div class="slabel">Cardio — 19:30</div>
+      <span class="badge badge-c" style="margin-bottom:8px;display:inline-block">Cardio pur ~40 min</span>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6">30 sec viteză mare → 90 sec normal → ×8 + 10 min incline maxim final</p>
+    </div>`;
+  } else {
+    actHTML = `<div class="note-box" style="margin-top:10px"><strong>${prog.emoji} ${prog.type}</strong><br>${dow===0?'Odihnă completă. Mușchii cresc în repaus.':'Mersul tău normal de 5000-10000 pași.'}</div>`;
+  }
+
+  document.getElementById('day-program-detail').innerHTML = `
+    <div class="card">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:14px">
+        ${prog.emoji} ${DAY_NAMES[dow].toUpperCase()} <span style="font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400">— ${prog.type}</span>
+      </div>
+      <div class="slabel">Mâncare recomandată</div>
+      ${mealHTML}
+      <div style="background:rgba(232,255,71,0.06);border:1px solid rgba(232,255,71,0.2);border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600">Total</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--accent);font-weight:600">${total} kcal</span>
+      </div>
+    </div>
+    ${actHTML}
+  `;
+}
+
+// ==================== STATS ====================
+function getWeekDates() {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+function renderStats() {
+  const dates = getWeekDates();
+  const s = state.settings;
+
+  let totalWater=0, totalKcal=0, totalProt=0, totalSteps=0;
+  let daysLogged=0, totalSessions=0, totalExDone=0;
+
+  dates.forEach(d => {
+    const key = dateKey(d);
+    const day = state.days[key];
+    if (!day) return;
+    const w = day.water ? day.water.reduce((a,b) => a+b.ml, 0) : 0;
+    const k = day.meals ? day.meals.reduce((a,b) => a+(b.kcal||0), 0) : 0;
+    const p = day.meals ? day.meals.reduce((a,b) => a+(b.prot||0), 0) : 0;
+    const st = day.steps || 0;
+    if (w > 0 || k > 0 || st > 0) daysLogged++;
+    totalWater += w;
+    totalKcal += k;
+    totalProt += p;
+    totalSteps += st;
+    const exDone = Object.values(day.exercises||{}).filter(Boolean).length;
+    totalExDone += exDone;
+    const blocA = EXERCISES.filter(e => e.type==='Bloc A' && day.exercises && day.exercises[e.id]).length;
+    const blocB = EXERCISES.filter(e => e.type==='Bloc B' && day.exercises && day.exercises[e.id]).length;
+    totalSessions += (blocA >= 3 ? 1 : 0) + (blocB >= 3 ? 1 : 0);
+  });
+
+  const days7 = Math.max(daysLogged, 1);
+  const avgW = Math.round(totalWater / 7);
+  const avgK = Math.round(totalKcal / 7);
+  const avgP = Math.round(totalProt / 7);
+  const avgS = Math.round(totalSteps / 7);
+
+  document.getElementById('stats-week-label').textContent = `${dates[0].getDate()} ${MONTHS[dates[0].getMonth()]} — ${dates[6].getDate()} ${MONTHS[dates[6].getMonth()]}`;
+
+  document.getElementById('avg-water').textContent = avgW.toLocaleString() + ' ml';
+  document.getElementById('avg-kcal').textContent = avgK.toLocaleString() + ' kcal';
+  document.getElementById('avg-prot').textContent = avgP + ' g';
+  document.getElementById('avg-steps').textContent = avgS.toLocaleString() + ' pași';
+
+  document.getElementById('avg-water-bar').style.width = Math.min(100,(avgW/s.water)*100) + '%';
+  document.getElementById('avg-kcal-bar').style.width = Math.min(100,(avgK/s.kcal)*100) + '%';
+  document.getElementById('avg-prot-bar').style.width = Math.min(100,(avgP/s.prot)*100) + '%';
+  document.getElementById('avg-steps-bar').style.width = Math.min(100,(avgS/s.steps)*100) + '%';
+
+  document.getElementById('stat-sessions').textContent = totalSessions;
+  document.getElementById('stat-ex-done').textContent = totalExDone;
+  document.getElementById('stat-days-logged').textContent = daysLogged;
+
+  // Streak
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const day = state.days[dateKey(d)];
+    if (day && ((day.meals && day.meals.length > 0) || (day.steps && day.steps > 0))) streak++;
+    else if (i > 0) break;
+  }
+  document.getElementById('stat-streak').textContent = streak;
+
+  // Progress
+  const w = s.weight;
+  const bmi = (w / Math.pow(s.height/100, 2)).toFixed(1);
+  const pct = Math.max(0, Math.min(100, ((s.startWeight - w) / (s.startWeight - s.goalWeight)) * 100));
+  document.getElementById('prog-w').textContent = w;
+  document.getElementById('prog-bmi').textContent = bmi;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-rem').textContent = Math.max(0, w - s.goalWeight).toFixed(1) + ' kg';
+  document.getElementById('prog-start-lbl').textContent = s.startWeight + ' kg';
+  document.getElementById('prog-goal-lbl').textContent = s.goalWeight + ' kg';
+
+  // Timeline
+  const diff = s.startWeight - s.goalWeight;
+  const tl = [
+    {dot:'S', cls:'s', luna:'Start', greu: s.startWeight + ' kg', bmi: 'BMI: ' + (s.startWeight/Math.pow(s.height/100,2)).toFixed(1)},
+    {dot:'L2', cls:'', luna:'Luna 2', greu: '~' + (s.startWeight - diff*0.27).toFixed(0) + ' kg', bmi:''},
+    {dot:'L3', cls:'', luna:'Luna 3', greu: '~' + (s.startWeight - diff*0.47).toFixed(0) + ' kg', bmi:''},
+    {dot:'L4', cls:'', luna:'Luna 4', greu: '~' + (s.startWeight - diff*0.67).toFixed(0) + ' kg', bmi:''},
+    {dot:'🎯', cls:'e', luna:'Luna 5-6', greu: s.goalWeight + ' kg ✓', bmi: 'BMI: ' + (s.goalWeight/Math.pow(s.height/100,2)).toFixed(1)},
+  ];
+  document.getElementById('timeline').innerHTML = tl.map(t => `
+    <div class="tl-item">
+      <div class="tl-dot ${t.cls}">${t.dot}</div>
+      <div class="tl-content">
+        <div class="tl-luna">${t.luna}</div>
+        <div class="tl-greu" style="${t.cls==='e'?'color:var(--accent)':''}">${t.greu}</div>
+        ${t.bmi ? `<div class="tl-bmi" style="${t.cls==='e'?'color:var(--accent)':''}">${t.bmi}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateWeight(delta) {
+  state.settings.weight = Math.max(40, Math.round((state.settings.weight + delta) * 10) / 10);
+  saveState();
+  renderStats();
+  document.getElementById('top-weight').textContent = state.settings.weight;
+}
+
+// ==================== SETTINGS ====================
+function loadSettingsForm() {
+  const s = state.settings;
+  document.getElementById('set-weight').value = s.weight;
+  document.getElementById('set-height').value = s.height;
+  document.getElementById('set-goal-weight').value = s.goalWeight;
+  document.getElementById('set-start-weight').value = s.startWeight;
+  document.getElementById('set-kcal').value = s.kcal;
+  document.getElementById('set-prot').value = s.prot;
+  document.getElementById('set-water').value = s.water;
+  document.getElementById('set-steps').value = s.steps;
+}
+
+function saveSettings() {
+  const s = state.settings;
+  s.weight = parseFloat(document.getElementById('set-weight').value) || s.weight;
+  s.height = parseFloat(document.getElementById('set-height').value) || s.height;
+  s.goalWeight = parseFloat(document.getElementById('set-goal-weight').value) || s.goalWeight;
+  s.startWeight = parseFloat(document.getElementById('set-start-weight').value) || s.startWeight;
+  s.kcal = parseInt(document.getElementById('set-kcal').value) || s.kcal;
+  s.prot = parseInt(document.getElementById('set-prot').value) || s.prot;
+  s.water = parseInt(document.getElementById('set-water').value) || s.water;
+  s.steps = parseInt(document.getElementById('set-steps').value) || s.steps;
+  saveState();
+  renderTrackerPage();
+  const saved = document.getElementById('settings-saved');
+  saved.style.display = 'block';
+  setTimeout(() => saved.style.display = 'none', 2500);
+  document.getElementById('top-weight').textContent = s.weight;
+  document.getElementById('top-kcal').textContent = s.kcal;
 }
 
 // ==================== SERVICE WORKER ====================
@@ -1006,10 +1110,9 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==================== INIT ====================
-renderWeekChips();
-renderTracker();
-renderTimeline();
-renderProgress();
+renderTrackerPage();
+renderProgramPage();
+loadSettingsForm();
 </script>
 </body>
 </html>
