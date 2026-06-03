@@ -343,9 +343,26 @@ label { font-size:12px; color:var(--muted); display:block; margin-bottom:5px; fo
 
 <!-- ========== PAGE: STATS ========== -->
 <div id="page-stats" class="page">
+
+  <!-- WEEKLY CARD -->
   <div class="card">
-    <div class="card-title">📊 ACEASTĂ SĂPTĂMÂNĂ</div>
-    <div class="stats-week-label" id="stats-week-label"></div>
+    <div class="card-title">📊 MEDIE 7 ZILE</div>
+
+    <!-- Week date picker -->
+    <div class="date-nav" style="margin-bottom:12px">
+      <button class="date-nav-btn" onclick="changeWeekStart(-7)">‹</button>
+      <div class="date-nav-center">
+        <div class="dn-day" style="font-size:14px;font-family:'DM Sans',sans-serif;font-weight:600" id="week-range-label">—</div>
+        <div id="week-today-badge" style="display:none;color:var(--accent);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:2px">● ULTIMELE 7 ZILE</div>
+      </div>
+      <button class="date-nav-btn" onclick="changeWeekStart(7)" id="week-next-btn">›</button>
+    </div>
+    <!-- Date picker input -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:4px;display:block">Selectează ziua de start</label>
+      <input type="date" id="week-start-picker" onchange="setWeekFromPicker()" style="font-size:13px;padding:8px 12px">
+    </div>
+
     <div class="avg-bar">
       <div class="avg-bar-header"><span>💧 Medie apă/zi</span><span id="avg-water" style="color:var(--accent3)">— ml</span></div>
       <div class="prog-track"><div class="prog-fill pf-blue" id="avg-water-bar" style="width:0%"></div></div>
@@ -368,6 +385,42 @@ label { font-size:12px; color:var(--muted); display:block; margin-bottom:5px; fo
       <div class="stat-box green"><div class="sv" id="stat-ex-done">0</div><div class="sl">Exerciții bifate</div></div>
       <div class="stat-box blue"><div class="sv" id="stat-days-logged">0</div><div class="sl">Zile cu log</div></div>
       <div class="stat-box orange"><div class="sv" id="stat-streak">0</div><div class="sl">Zile consecutive</div></div>
+    </div>
+  </div>
+
+  <!-- MONTHLY CARD -->
+  <div class="card">
+    <div class="card-title">📅 MEDIE LUNARĂ</div>
+    <div class="date-nav" style="margin-bottom:12px">
+      <button class="date-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="date-nav-center">
+        <div class="dn-day" style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px" id="month-label">—</div>
+        <div id="month-today-badge" style="display:none;color:var(--accent);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:2px">● LUNA CURENTĂ</div>
+      </div>
+      <button class="date-nav-btn" onclick="changeMonth(1)" id="month-next-btn">›</button>
+    </div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>💧 Medie apă/zi</span><span id="mavg-water" style="color:var(--accent3)">— ml</span></div>
+      <div class="prog-track"><div class="prog-fill pf-blue" id="mavg-water-bar" style="width:0%"></div></div>
+    </div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>🔥 Medie kcal/zi</span><span id="mavg-kcal" style="color:var(--accent)">— kcal</span></div>
+      <div class="prog-track"><div class="prog-fill pf-accent" id="mavg-kcal-bar" style="width:0%"></div></div>
+    </div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>🥩 Medie proteine/zi</span><span id="mavg-prot" style="color:var(--accent2)">— g</span></div>
+      <div class="prog-track"><div class="prog-fill pf-purple" id="mavg-prot-bar" style="width:0%"></div></div>
+    </div>
+    <div class="avg-bar">
+      <div class="avg-bar-header"><span>🚶 Medie pași/zi</span><span id="mavg-steps" style="color:var(--green)">— pași</span></div>
+      <div class="prog-track"><div class="prog-fill pf-green" id="mavg-steps-bar" style="width:0%"></div></div>
+    </div>
+    <hr class="divider">
+    <div class="stat-grid">
+      <div class="stat-box accent"><div class="sv" id="mstat-sessions">0</div><div class="sl">Sesiuni antrenament</div></div>
+      <div class="stat-box green"><div class="sv" id="mstat-ex-done">0</div><div class="sl">Exerciții bifate</div></div>
+      <div class="stat-box blue"><div class="sv" id="mstat-days-logged">0</div><div class="sl">Zile cu log</div></div>
+      <div class="stat-box orange"><div class="sv" id="mstat-days-total">0</div><div class="sl">Zile în lună</div></div>
     </div>
   </div>
 
@@ -958,27 +1011,31 @@ function renderProgramDay(dow) {
 }
 
 // ==================== STATS ====================
-function getWeekDates() {
-  const today = new Date();
-  const dow = today.getDay();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+// Week start date — default: 6 days ago (last 7 days ending today)
+let weekStartDate = (() => {
+  const d = new Date();
+  d.setDate(d.getDate() - 6);
+  d.setHours(0,0,0,0);
+  return d;
+})();
+
+// Month view — default: current month
+let statsMonth = new Date().getMonth();
+let statsYear = new Date().getFullYear();
+
+function getDatesFrom(startDate, count) {
   const dates = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+  for (let i = 0; i < count; i++) {
+    const d = new Date(startDate);
+    d.setDate(startDate.getDate() + i);
     dates.push(d);
   }
   return dates;
 }
 
-function renderStats() {
-  const dates = getWeekDates();
-  const s = state.settings;
-
+function calcStatsForDates(dates) {
   let totalWater=0, totalKcal=0, totalProt=0, totalSteps=0;
   let daysLogged=0, totalSessions=0, totalExDone=0;
-
   dates.forEach(d => {
     const key = dateKey(d);
     const day = state.days[key];
@@ -988,50 +1045,138 @@ function renderStats() {
     const p = day.meals ? day.meals.reduce((a,b) => a+(b.prot||0), 0) : 0;
     const st = day.steps || 0;
     if (w > 0 || k > 0 || st > 0) daysLogged++;
-    totalWater += w;
-    totalKcal += k;
-    totalProt += p;
-    totalSteps += st;
+    totalWater += w; totalKcal += k; totalProt += p; totalSteps += st;
     const exDone = Object.values(day.exercises||{}).filter(Boolean).length;
     totalExDone += exDone;
     const blocA = EXERCISES.filter(e => e.type==='Bloc A' && day.exercises && day.exercises[e.id]).length;
     const blocB = EXERCISES.filter(e => e.type==='Bloc B' && day.exercises && day.exercises[e.id]).length;
     totalSessions += (blocA >= 3 ? 1 : 0) + (blocB >= 3 ? 1 : 0);
   });
+  return { totalWater, totalKcal, totalProt, totalSteps, daysLogged, totalSessions, totalExDone };
+}
 
-  const days7 = Math.max(daysLogged, 1);
-  const avgW = Math.round(totalWater / 7);
-  const avgK = Math.round(totalKcal / 7);
-  const avgP = Math.round(totalProt / 7);
-  const avgS = Math.round(totalSteps / 7);
+function changeWeekStart(delta) {
+  weekStartDate = new Date(weekStartDate);
+  weekStartDate.setDate(weekStartDate.getDate() + delta);
+  // Don't go into the future
+  const today = new Date(); today.setHours(0,0,0,0);
+  const maxStart = new Date(today); maxStart.setDate(today.getDate() - 6);
+  if (weekStartDate > maxStart) weekStartDate = new Date(maxStart);
+  renderWeekStats();
+}
 
-  document.getElementById('stats-week-label').textContent = `${dates[0].getDate()} ${MONTHS[dates[0].getMonth()]} — ${dates[6].getDate()} ${MONTHS[dates[6].getMonth()]}`;
+function setWeekFromPicker() {
+  const val = document.getElementById('week-start-picker').value;
+  if (!val) return;
+  const picked = new Date(val + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const maxStart = new Date(today); maxStart.setDate(today.getDate() - 6);
+  weekStartDate = picked > maxStart ? maxStart : picked;
+  renderWeekStats();
+}
+
+function changeMonth(delta) {
+  statsMonth += delta;
+  if (statsMonth > 11) { statsMonth = 0; statsYear++; }
+  if (statsMonth < 0) { statsMonth = 11; statsYear--; }
+  // Don't go into future months
+  const now = new Date();
+  if (statsYear > now.getFullYear() || (statsYear === now.getFullYear() && statsMonth > now.getMonth())) {
+    statsMonth = now.getMonth(); statsYear = now.getFullYear();
+  }
+  renderMonthStats();
+}
+
+function renderWeekStats() {
+  const s = state.settings;
+  const dates = getDatesFrom(weekStartDate, 7);
+  const endDate = dates[6];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const isCurrentWeek = dateKey(endDate) === dateKey(today) || endDate > today;
+
+  // Update label
+  const startLabel = `${weekStartDate.getDate()} ${MONTHS[weekStartDate.getMonth()]}`;
+  const endLabel = `${endDate.getDate()} ${MONTHS[endDate.getMonth()]}`;
+  document.getElementById('week-range-label').textContent = `${startLabel} — ${endLabel}`;
+  document.getElementById('week-today-badge').style.display = isCurrentWeek ? 'block' : 'none';
+
+  // Update date picker
+  document.getElementById('week-start-picker').value = dateKey(weekStartDate);
+
+  // Disable next if already at current week
+  document.getElementById('week-next-btn').style.opacity = isCurrentWeek ? '0.3' : '1';
+  document.getElementById('week-next-btn').style.pointerEvents = isCurrentWeek ? 'none' : 'auto';
+
+  const r = calcStatsForDates(dates);
+  const avgW = Math.round(r.totalWater / 7);
+  const avgK = Math.round(r.totalKcal / 7);
+  const avgP = Math.round(r.totalProt / 7);
+  const avgS = Math.round(r.totalSteps / 7);
 
   document.getElementById('avg-water').textContent = avgW.toLocaleString() + ' ml';
   document.getElementById('avg-kcal').textContent = avgK.toLocaleString() + ' kcal';
   document.getElementById('avg-prot').textContent = avgP + ' g';
   document.getElementById('avg-steps').textContent = avgS.toLocaleString() + ' pași';
-
   document.getElementById('avg-water-bar').style.width = Math.min(100,(avgW/s.water)*100) + '%';
   document.getElementById('avg-kcal-bar').style.width = Math.min(100,(avgK/s.kcal)*100) + '%';
   document.getElementById('avg-prot-bar').style.width = Math.min(100,(avgP/s.prot)*100) + '%';
   document.getElementById('avg-steps-bar').style.width = Math.min(100,(avgS/s.steps)*100) + '%';
-
-  document.getElementById('stat-sessions').textContent = totalSessions;
-  document.getElementById('stat-ex-done').textContent = totalExDone;
-  document.getElementById('stat-days-logged').textContent = daysLogged;
+  document.getElementById('stat-sessions').textContent = r.totalSessions;
+  document.getElementById('stat-ex-done').textContent = r.totalExDone;
+  document.getElementById('stat-days-logged').textContent = r.daysLogged;
 
   // Streak
   let streak = 0;
-  const today = new Date();
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
+  for (let i = 0; i < 90; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
     const day = state.days[dateKey(d)];
     if (day && ((day.meals && day.meals.length > 0) || (day.steps && day.steps > 0))) streak++;
     else if (i > 0) break;
   }
   document.getElementById('stat-streak').textContent = streak;
+}
+
+function renderMonthStats() {
+  const s = state.settings;
+  const now = new Date();
+  const isCurrentMonth = statsMonth === now.getMonth() && statsYear === now.getFullYear();
+
+  document.getElementById('month-label').textContent = `${MONTHS[statsMonth]} ${statsYear}`;
+  document.getElementById('month-today-badge').style.display = isCurrentMonth ? 'block' : 'none';
+  document.getElementById('month-next-btn').style.opacity = isCurrentMonth ? '0.3' : '1';
+  document.getElementById('month-next-btn').style.pointerEvents = isCurrentMonth ? 'none' : 'auto';
+
+  // Get all days in this month
+  const daysInMonth = new Date(statsYear, statsMonth + 1, 0).getDate();
+  const dates = [];
+  for (let i = 1; i <= daysInMonth; i++) {
+    dates.push(new Date(statsYear, statsMonth, i));
+  }
+
+  const r = calcStatsForDates(dates);
+  const divisor = Math.max(r.daysLogged, 1);
+  const avgW = Math.round(r.totalWater / daysInMonth);
+  const avgK = Math.round(r.totalKcal / daysInMonth);
+  const avgP = Math.round(r.totalProt / daysInMonth);
+  const avgS = Math.round(r.totalSteps / daysInMonth);
+
+  document.getElementById('mavg-water').textContent = avgW.toLocaleString() + ' ml';
+  document.getElementById('mavg-kcal').textContent = avgK.toLocaleString() + ' kcal';
+  document.getElementById('mavg-prot').textContent = avgP + ' g';
+  document.getElementById('mavg-steps').textContent = avgS.toLocaleString() + ' pași';
+  document.getElementById('mavg-water-bar').style.width = Math.min(100,(avgW/s.water)*100) + '%';
+  document.getElementById('mavg-kcal-bar').style.width = Math.min(100,(avgK/s.kcal)*100) + '%';
+  document.getElementById('mavg-prot-bar').style.width = Math.min(100,(avgP/s.prot)*100) + '%';
+  document.getElementById('mavg-steps-bar').style.width = Math.min(100,(avgS/s.steps)*100) + '%';
+  document.getElementById('mstat-sessions').textContent = r.totalSessions;
+  document.getElementById('mstat-ex-done').textContent = r.totalExDone;
+  document.getElementById('mstat-days-logged').textContent = r.daysLogged;
+  document.getElementById('mstat-days-total').textContent = daysInMonth;
+}
+
+function renderStats() {
+  renderWeekStats();
+  renderMonthStats();
 
   // Progress
   const w = s.weight;
